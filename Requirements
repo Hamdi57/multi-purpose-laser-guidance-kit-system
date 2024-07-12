@@ -1,0 +1,5 @@
+Requirements
+
+-Python 3.x
+- pyserial library
+- tkinter library (Python comes included)
