@@ -1,0 +1,13 @@
+- Laser Control: Functionality to turn the laser device on and off.
+- Power Management: Laser power can be adjusted between 0-100.
+- Coordinate Adjustment: The X and Y coordinates of the laser can be adjusted precisely between -1000 and 1000.
+- User Interface: A simple and user-friendly graphical user interface (GUI) based on Tkinter.
+- Serial Communication: Possibility to establish serial communication with the port and baudrate you want.
+
+Özellikler
+
+- Lazer Kontrolü: Lazer cihazını açma ve kapama işlevselliği.
+- Güç Yönetimi: Lazer gücünün 0-100 arasında ayarlanabilmesi.
+- Koordinat Ayarı: Lazerin X ve Y koordinatlarının -1000 ile 1000 arasında hassas bir şekilde ayarlanabilmesi.
+- Kullanıcı Arayüzü: Tkinter tabanlı basit ve kullanıcı dostu bir grafik kullanıcı arayüzü (GUI).
+- Seri İletişim: İstediğiniz port ve baudrate ile seri iletişim kurma imkanı.
