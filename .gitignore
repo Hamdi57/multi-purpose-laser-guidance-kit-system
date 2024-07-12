@@ -1,162 +1,137 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+import time
+import sys
+import serial
+from tkinter import *
+from tkinter import messagebox
 
-# C extensions
-*.so
+class CustomSerial:
+    def __init__(self, port, baudrate):
+        self.port = port
+        self.baudrate = baudrate
+        self.ser = None
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+    def open_connection(self):
+        try:
+            self.ser = serial.Serial(self.port, self.baudrate)
+            print(f"Cihaza başarıyla bağlandı. Port: {self.port}, Baudrate: {self.baudrate}")
+        except serial.SerialException as e:
+            print(f"Bağlantı hatası: {e}")
+            raise
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
+    def close_connection(self):
+        if self.ser:
+            self.ser.close()
+            print("Cihaz bağlantısı kapatıldı.")
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+    def write_data(self, data):
+        if self.ser.is_open:
+            try:
+                self.ser.write(data.encode())
+                data_with_newline = data + '\n'
+                time.sleep(0.1)  # İletişim stabilitesi için küçük bir bekleme süresi
+            except serial.SerialException as e:
+                print(f"Veri yazma hatası: {e}")
+        else:
+            print("Cihaz bağlı değil. İşlem gerçekleştirilemedi.")
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-cover/
+class LazerCihazi:
+    def __init__(self, port="COM3", baudrate=9600):
+        self.serial = CustomSerial(port, baudrate)
 
-# Translations
-*.mo
-*.pot
+    def lazer_islemi(self, komut, parametre):
+        try:
+            komut_dizisi = f"{komut}{parametre}"
+            self.serial.write_data(komut_dizisi)
+        except Exception as e:
+            print(f"Hata: {e}")
 
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
+    def lazer_ac(self):
+        self.lazer_islemi("AC", 1)
+        print("Lazer açıldı.")
 
-# Flask stuff:
-instance/
-.webassets-cache
+    def lazer_kapat(self):
+        self.lazer_islemi("DC", 0)
+        print("Lazer kapandı.")
 
-# Scrapy stuff:
-.scrapy
+    def guc_ayar(self, guc):
+        if 0 <= guc <= 100:
+            self.lazer_islemi("GUC", guc)
+            print(f"Lazer gücü {guc} seviyesine ayarlandı.")
+        else:
+            print("Geçersiz güç değeri. Güç 0 ile 100 arasında olmalıdır.")
 
-# Sphinx documentation
-docs/_build/
+    def koordinat_ayar(self, x, y):
+        if -1000 <= x <= 1000 and -1000 <= y <= 1000:
+            self.lazer_islemi("X", x)
+            self.lazer_islemi("Y", y)
+            print(f"Lazer X koordinatı {x}, Y koordinatı {y} olarak ayarlandı.")
+        else:
+            print("Geçersiz koordinatlar. Koordinatlar -1000 ile 1000 arasında olmalıdır.")
 
-# PyBuilder
-.pybuilder/
-target/
+class LazerGui:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Lazer Güdüm Sistemi")
 
-# Jupyter Notebook
-.ipynb_checkpoints
+        self.lazer_cihazi = LazerCihazi()
 
-# IPython
-profile_default/
-ipython_config.py
+        self.lazer_ac_btn = Button(root, text="Lazeri Aç", command=self.lazer_ac)
+        self.lazer_ac_btn.pack()
 
-# pyenv
-#   For a library or package, you might want to ignore these files since the code is
-#   intended to run in multiple environments; otherwise, check them in:
-# .python-version
+        self.lazer_kapat_btn = Button(root, text="Lazeri Kapat", command=self.lazer_kapat)
+        self.lazer_kapat_btn.pack()
 
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
+        self.guc_label = Label(root, text="Güç:")
+        self.guc_label.pack()
 
-# poetry
-#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
-#poetry.lock
+        self.guc_entry = Entry(root, width=5)
+        self.guc_entry.pack()
 
-# pdm
-#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
-#pdm.lock
-#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
-#   in version control.
-#   https://pdm.fming.dev/latest/usage/project/#working-with-version-control
-.pdm.toml
-.pdm-python
-.pdm-build/
+        self.guc_ayar_btn = Button(root, text="Gücü Ayarla", command=self.guc_ayar)
+        self.guc_ayar_btn.pack()
 
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
-__pypackages__/
+        self.koord_label = Label(root, text="Koordinatlar (X, Y):")
+        self.koord_label.pack()
 
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
+        self.x_entry = Entry(root, width=10)
+        self.x_entry.pack()
 
-# SageMath parsed files
-*.sage.py
+        self.y_entry = Entry(root, width=10)
+        self.y_entry.pack()
 
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+        self.koord_ayar_btn = Button(root, text="Koordinatları Ayarla", command=self.koordinat_ayar)
+        self.koord_ayar_btn.pack()
 
-# Spyder project settings
-.spyderproject
-.spyproject
+    def lazer_ac(self):
+        guc = self.guc_entry.get()
+        if guc.isdigit() and 0 <= int(guc) <= 100:
+            self.lazer_cihazi.lazer_ac()
+            messagebox.showinfo("Başarılı", "Lazer başarıyla açıldı.")
+        else:
+            messagebox.showerror("Hata", "Lütfen geçerli bir güç değeri girin (0-100 arasında).")
 
-# Rope project settings
-.ropeproject
+    def lazer_kapat(self):
+        self.lazer_cihazi.lazer_kapat()
+        messagebox.showinfo("Başarılı", "Lazer başarıyla kapatıldı.")
 
-# mkdocs documentation
-/site
+    def guc_ayar(self):
+        guc = self.guc_entry.get()
+        if guc.isdigit() and 0 <= int(guc) <= 100:
+            self.lazer_cihazi.guc_ayar(int(guc))
+            messagebox.showinfo("Başarılı", "Lazer gücü başarıyla ayarlandı.")
+        else:
+            messagebox.showerror("Hata", "Lütfen geçerli bir güç değeri girin (0-100 arasında).")
 
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
+    def koordinat_ayar(self):
+        x = self.x_entry.get()
+        y = self.y_entry.get()
+        if x.isdigit() and y.isdigit() and -1000 <= int(x) <= 1000 and -1000 <= int(y) <= 1000:
+            self.lazer_cihazi.koordinat_ayar(int(x), int(y))
+            messagebox.showinfo("Başarılı", "Lazer koordinatı başarıyla ayarlandı.")
+        else:
+            messagebox.showerror("Hata", "Lütfen geçerli koordinat değerleri girin (-1000 ile 1000 arasında).")
 
-# Pyre type checker
-.pyre/
-
-# pytype static type analyzer
-.pytype/
-
-# Cython debug symbols
-cython_debug/
-
-# PyCharm
-#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
+if __name__ == "__main__":
+    root = Tk()
+    my_gui = LazerGui(root)
+    root.mainloop()
