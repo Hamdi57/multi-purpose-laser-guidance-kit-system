@@ -1,0 +1,7 @@
+User guide
+
+1. Run the application.
+2. Configure the serial port settings (port and baudrate) correctly.
+3. Click the corresponding buttons to turn the laser device on or off.
+4. To adjust the laser power, enter the power value (between 0-100) and click the “Set Power” button.
+5. To set the X and Y coordinates of the laser, enter the appropriate values ​​and click the “Set Coordinates” button.
